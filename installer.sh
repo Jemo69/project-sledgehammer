@@ -10,10 +10,11 @@ set -e
 
 # Define regular apt packages
 apt_packages=(
+
+    "zoxide"
     "git"
     "unzip"
     "fzf"
-    "zoxide"
     "tmux"
     "stow"
     "nodejs"
