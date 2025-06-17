@@ -12,7 +12,7 @@ set -e
 apt_packages=(
     "git"
     "fzf"
-    "eza"
+    "exa"
     "zoxide"
     "tmux"
     "stow"
