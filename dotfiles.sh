@@ -5,6 +5,10 @@ set -e
 DOT_FILES_REPO="https://github.com/Jemo69/dot-file.git"
 DOT_FILES_DIR="dot-file" # The directory git clone will create
 
+
+if [ -f ~/.zshrc ]; then echo "Backing up existing ~/.zshrc..."
+     mv ~/.zshrc ~/.zshrc.bak
+fi
 echo "--- Checking for 'stow' installation ---"
 if ! command -v stow &> /dev/null; then
     echo "'stow' is not installed. Attempting to install 'stow'..."

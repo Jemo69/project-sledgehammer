@@ -11,6 +11,7 @@ set -e
 # Define regular apt packages
 apt_packages=(
     "git"
+    "unzip"
     "fzf"
     "eza"
     "zoxide"
