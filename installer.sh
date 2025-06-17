@@ -79,5 +79,6 @@ elif [ -f "$HOME/.zshrc" ]; then
 fi
 echo "Install github cli"
     sudo apt-get install gh 
+    #this not working
 echo "--- All installations attempted. ---"
 echo "Please open a new terminal or manually run 'source ~/.bashrc' or 'source ~/.zshrc' to ensure all new commands are in your PATH."
