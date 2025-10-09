@@ -2,6 +2,7 @@
 
 echo "automating Jemo setup"
 
-./zshsetup.sh
-./installer.sh
+
 ./dotfiles.sh
+./installer.sh
+./zshsetup.sh

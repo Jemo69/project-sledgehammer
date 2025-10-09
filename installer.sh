@@ -51,6 +51,11 @@ curl_install_commands=(
     "curl -LsSf https://astral.sh/uv/install.sh | sh"
     "curl -fsSL https://bun.sh/install | bash"
     "curl -fsSL https://deno.land/install.sh | sh"
+    "bash <(curl --proto '=https' --tlsv1.2 -sSf https://setup.atuin.sh)"
+
+atuin register -u <USERNAME> -e <EMAIL>
+atuin import auto
+atuin sync
 )
 
 for cmd in "${curl_install_commands[@]}"; do
