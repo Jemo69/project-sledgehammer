@@ -11,11 +11,13 @@ else
 fi
 
 echo "--- Installing Oh My Zsh ---"
-# The 'sh -c' part is necessary because the curl output is piped to sh
-# The -y flag to the install script (if supported) can make it non-interactive,
-# but the Oh My Zsh installer is usually interactive by default,
-# prompting you to change your default shell.
-if sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"; then
+if [ -d "$HOME/.oh-my-zsh" ]; then
+    echo "Removing existing Oh My Zsh installation..."
+    rm -rf "$HOME/.oh-my-zsh"
+fi
+# The 'sh -c' part is necessary because the curl output is piped to sh.
+# We use the '--unattended' flag to make the installation non-interactive.
+if sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh) "" --unattended"; then
     echo "Oh My Zsh installation script executed successfully."
     echo "You may need to log out and log back in, or open a new terminal, for Zsh and Oh My Zsh to take effect."
 else
