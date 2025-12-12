@@ -1,0 +1,12 @@
+ERR 2025-12-12T10:25:13.788 nvim.27245.0 decor_provider_error:36: Error in decoration provider "line" (ns=nvim.treesitter.highlighter):
+Error executing lua: ...rmux/files/usr/share/nvim/runtime/lua/vim/treesitter.lua:195: Index out of bounds
+stack traceback:
+	[C]: in function 'nvim_buf_get_text'
+	...rmux/files/usr/share/nvim/runtime/lua/vim/treesitter.lua:195: in function 'get_node_text'
+	...iles/usr/share/nvim/runtime/lua/vim/treesitter/query.lua:553: in function 'handler'
+	...iles/usr/share/nvim/runtime/lua/vim/treesitter/query.lua:884: in function '_match_predicates'
+	...iles/usr/share/nvim/runtime/lua/vim/treesitter/query.lua:1013: in function 'iter'
+	...sr/share/nvim/runtime/lua/vim/treesitter/highlighter.lua:385: in function 'fn'
+	...sr/share/nvim/runtime/lua/vim/treesitter/highlighter.lua:239: in function 'for_each_highlight_state'
+	...sr/share/nvim/runtime/lua/vim/treesitter/highlighter.lua:358: in function 'on_line_impl'
+	...sr/share/nvim/runtime/lua/vim/treesitter/highlighter.lua:457: in function <...sr/share/nvim/runtime/lua/vim/treesitter/highlighter.lua:451>

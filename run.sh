@@ -2,8 +2,8 @@
 
 ./art.sh
 echo "automating Jemo setup"
-
-
-./dotfiles.sh
-./installer.sh
 ./zshsetup.sh
+
+
+./installer.sh
+./dotfiles.sh

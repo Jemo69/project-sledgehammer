@@ -20,6 +20,8 @@ apt_packages=(
     "valkey-server"
     "gh"
     "eza"
+    "ripgrep"
+    "jq"
 )
 
 echo "--- Installing apt packages ---"
@@ -84,6 +86,21 @@ for cmd in "${curl_install_commands[@]}"; do
         exit 1 # Exit if a curl command fails
     fi
 done
+echo "--- installing thought script --- "
+scriptpackages=(
+    './install-dart.sh'
+    './install-eza.sh'
+    )
+for script in "${scriptpackages[@]}";do 
+    echo "runing script : ${script}"
+    if eval "${script}"; then
+        echo "Command executed successfully."
+    else
+        echo "Error: Command failed to execute. Aborting."
+        exit 1 # Exit if a curl command fails
+    fi
+done
+    
 
 echo "--- Attempting to source shell configuration for newly installed tools ---"
 # Sourcing here makes commands available in the *current script's environment*.
