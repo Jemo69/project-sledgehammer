@@ -1,91 +1,140 @@
-#!/bin/bash 
-sudo apt update -y
-
-sudo apt upgrade -y
-
-
-
-#!/usr/bin/env zsh
+#!/bin/bash
 set -e
 
-# Define regular apt packages
-apt_packages=(
+# Logging functions for a modern feel
+log_info() { echo -e "\e[34m[INFO]\e[0m $1"; }
+log_success() { echo -e "\e[32m[SUCCESS]\e[0m $1"; }
+log_error() { echo -e "\e[31m[ERROR]\e[0m $1"; }
 
-    "zoxide"
-    "git"
-    "unzip"
-    "fzf"
-    "tmux"
-    "stow"
-    "nodejs"
-    "neovim"
-    "golang"
-    "valkey-server" 
-    "lazygit"
-)
+log_info "Starting modernization installer..."
 
-echo "--- Installing apt packages ---"
+# ==========================================
+# LEVEL 1: APT (System Packages)
+# ==========================================
+log_info "Updating system packages..."
+sudo apt update && sudo apt upgrade -y
 
-for package in "${apt_packages[@]}"; do
-    echo "Installing ${package}..."
-    if sudo apt install -y "${package}"; then
-        echo "${package} installed successfully."
-    else
-        echo "Error: Failed to install ${package}. Aborting."
-        exit 1 # Exit if an apt package fails to install
-    fi
-done
+log_info "Installing core prerequisites..."
+sudo apt install -y gpg curl wget git unzip
 
-echo "--- Done with non-curl packages ---"
-
-# Add a small delay for clarity, using correct sleep syntax
-sleep 3
-
-echo "--- Installing curl-based packages ---"
-
-# Define curl-based installation commands.
-# Each command should be executable as is.
-# Note: For uv, bun, and deno, their install scripts often handle PATH setup.
-# Rustup also handles PATH setup and suggests sourcing.
-curl_install_commands=(
-    "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y" # -y to auto-confirm rustup
-    "curl -LsSf https://astral.sh/uv/install.sh | sh"
-    "curl -fsSL https://bun.sh/install | bash"
-    "curl -fsSL https://deno.land/install.sh | sh"
-    "bash <(curl --proto '=https' --tlsv1.2 -sSf https://setup.atuin.sh)"
-
-atuin register -u <USERNAME> -e <EMAIL>
-atuin import auto
-atuin sync
-)
-
-for cmd in "${curl_install_commands[@]}"; do
-    echo "Executing: ${cmd}"
-    # Use 'eval' for commands that include pipes or complex expansions,
-    # but be cautious with untrusted input if this were user-facing.
-    # For predefined commands like these, it's generally safe.
-    if eval "${cmd}"; then
-        echo "Command executed successfully."
-    else
-        echo "Error: Command failed to execute. Aborting."
-        exit 1 # Exit if a curl command fails
-    fi
-done
-
-echo "--- Attempting to source shell configuration for newly installed tools ---"
-# Most of these installers modify .bashrc or .zshrc.
-# Sourcing it here will make the commands available in the *current script's environment*.
-# For interactive sessions, you'll still need to open a new terminal or manually source.
-if [ -f "$HOME/.bashrc" ]; then
-    echo "Sourcing ~/.bashrc..."
-    source "$HOME/.bashrc"
-elif [ -f "$HOME/.zshrc" ]; then
-    echo "Sourcing ~/.zshrc..."
-    source "$HOME/.zshrc"
+# Install Eza (Special APT repo)
+if ! command -v eza &> /dev/null; then
+    log_info "Installing eza..."
+    sudo mkdir -p /etc/apt/keyrings
+    wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg
+    echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | sudo tee /etc/apt/sources.list.d/gierens.list
+    sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
+    sudo apt update
+    sudo apt install -y eza
 fi
-echo "Install github cli"
-    sudo apt-get install gh 
-    sudo apt  install exa
-    #this not working
-echo "--- All installations attempted. ---"
-echo "Please open a new terminal or manually run 'source ~/.bashrc' or 'source ~/.zshrc' to ensure all new commands are in your PATH."
+
+apt_packages=(
+    fzf stow zoxide tmux nodejs npm neovim golang valkey-server 
+    lazygit ripgrep jq ffmpeg 7zip poppler-utils fd-find imagemagick gh
+)
+
+log_info "Installing APT packages..."
+for pkg in "${apt_packages[@]}"; do
+    if ! dpkg -l | grep -q "^ii  $pkg " &> /dev/null; then
+        sudo apt install -y "$pkg"
+    fi
+done
+
+# ==========================================
+# LEVEL 2: CURL (Installers & Binaries)
+# ==========================================
+log_info "Running CURL-based installers..."
+
+# Rust
+if ! command -v rustup &> /dev/null; then
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    source "$HOME/.cargo/env"
+fi
+
+# uv
+if ! command -v uv &> /dev/null; then
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+fi
+
+# Bun
+if ! command -v bun &> /dev/null; then
+    curl -fsSL https://bun.sh/install | bash
+fi
+
+# Deno
+if ! command -v deno &> /dev/null; then
+    curl -fsSL https://deno.land/install.sh | sh
+fi
+
+# Atuin
+if ! command -v atuin &> /dev/null; then
+    curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
+fi
+
+# NVM
+if [ ! -d "$HOME/.nvm" ]; then
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
+fi
+
+# pnpm
+if ! command -v pnpm &> /dev/null; then
+    curl -fsSL https://get.pnpm.io/install.sh | sh -
+fi
+
+# Opencode
+if ! command -v opencode &> /dev/null; then
+    curl -fsSL https://opencode.ai/install | bash
+fi
+
+# jj (Jujutsu)
+if ! command -v jj &> /dev/null; then
+    log_info "Installing jj (Jujutsu)..."
+    CURR_DIR=$(pwd)
+    cd /tmp
+    curl -LO https://github.com/jj-vcs/jj/releases/latest/download/jj-x86_64-unknown-linux-musl.tar.gz
+    tar -xzf jj-x86_64-unknown-linux-musl.tar.gz
+    sudo mv jj /usr/local/bin/
+    rm jj-x86_64-unknown-linux-musl.tar.gz
+    cd "$CURR_DIR"
+fi
+
+# ==========================================
+# LEVEL 3: PIPX (Python Apps)
+# ==========================================
+log_info "Installing pipx apps..."
+sudo apt install -y pipx
+pipx ensurepath --force
+export PATH="$PATH:$HOME/.local/bin"
+
+pipx_apps=(squall_sql jemo-admin todoist-cli-tool)
+for app in "${pipx_apps[@]}"; do
+    if ! pipx list | grep -q "package $app" &> /dev/null; then
+        pipx install "$app" || true
+    fi
+done
+
+# ==========================================
+# LEVEL 4: PNPM (Node Apps)
+# ==========================================
+# (Add pnpm apps here if any)
+
+# ==========================================
+# LEVEL 5: BUN (Node Apps)
+# ==========================================
+# (Add bun apps here if any)
+
+# ==========================================
+# LEVEL 6: NPM (Node Apps)
+# ==========================================
+log_info "Installing NPM global packages..."
+if ! command -v gemini &> /dev/null; then
+    sudo npm install -g @google/gemini-cli
+fi
+
+# ==========================================
+# LEVEL 7: BUILD FROM SOURCE
+# ==========================================
+# (Add build from source steps here if any)
+
+log_success "--- All installations completed successfully! ---"
+log_info "Note: You may need to restart your shell or run 'source ~/.bashrc' or 'source ~/.zshrc'."
